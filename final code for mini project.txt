@@ -1,0 +1,132 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#ifdef _WIN32
+#include <windows.h>
+void delay()
+{
+    Sleep(300);
+    system("cls");
+}
+#else
+#include <unistd.h>
+void delay()
+{
+    usleep(300000);
+    printf("\033[H\033[J");
+    fflush(stdout);
+}
+#endif
+
+#define SIZE 11
+
+int path[SIZE][SIZE] = { 0 };
+int carX = 0, carY = 0;
+
+void displayGrid()
+{
+    int i, j;
+
+    printf("       AUTONOMOUS CAR NAVIGATION\n");
+    printf("   C = CAR | . = PATH | G = GOAL\n\n");
+
+    for (j = 10; j >= 0; j--)
+    {
+        printf("%2d | ", j);
+
+        for (i = 0; i <= 10; i++)
+        {
+            if (i == carX && j == carY)
+                printf(" C ");
+            else if (i == 10 && j == 10)
+                printf(" G ");
+            else if (path[i][j] == 1)
+                printf(" . ");
+            else
+                printf("   ");
+        }
+        printf("\n");
+    }
+
+    printf("   ---------------------------------\n");
+    printf("     ");
+
+    for (i = 0; i <= 10; i++)
+        printf("%2d ", i);
+
+    printf("\n\nCar Position: (%d,%d)\n", carX, carY);
+    printf("Final Goal: (10,10)\n");
+}
+
+void moveCar(int targetX, int targetY)
+{
+    while (carX != targetX)
+    {
+        if (carX < targetX)
+            carX++;
+        else
+            carX--;
+
+        path[carX][carY] = 1;
+
+        displayGrid();
+        delay();
+    }
+
+    while (carY != targetY)
+    {
+        if (carY < targetY)
+            carY++;
+        else
+            carY--;
+
+        path[carX][carY] = 1;
+
+        displayGrid();
+        delay();
+    }
+}
+
+int main()
+{
+    int x[3], y[3];
+    int i;
+
+    printf("AUTONOMOUS CAR NAVIGATION\n");
+    printf("Starting Position: (0,0)\n");
+    printf("Final Goal: (10,10)\n\n");
+
+    for (i = 0; i < 3; i++)
+    {
+        printf("Enter coordinate %d (X Y): ", i + 1);
+        if (scanf_s("%d %d", &x[i], &y[i]) != 2)
+        {
+            printf("Invalid input!\n");
+            return 0;
+        }
+
+        if (x[i] < 0 || x[i] > 10 ||
+            y[i] < 0 || y[i] > 10)
+        {
+            printf("Coordinates must be between 0 and 10.\n");
+            return 0;
+        }
+    }
+
+    path[0][0] = 1;
+
+    displayGrid();
+    delay();
+
+    for (i = 0; i < 3; i++)
+    {
+        moveCar(x[i], y[i]);
+    }
+
+    moveCar(10, 10);
+
+    displayGrid();
+    printf("\nFINAL GOAL REACHED!\n");
+
+    return 0;
+}
